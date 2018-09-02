@@ -78,6 +78,7 @@ inline Vinecop::Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
     check_pair_copulas_rvine_structure(pair_copulas);
 
     pair_copulas_ = pair_copulas;
+    vine_struct_.truncate(pair_copulas.size());
     threshold_ = 0.0;
     loglik_ = NAN;
 }
@@ -313,7 +314,7 @@ inline void Vinecop::select_all(const Eigen::MatrixXd &data,
     threshold_ = selector.get_threshold();
     loglik_ = selector.get_loglik();
     nobs_ = data.rows();
-    vine_struct_ = selector.get_rvine_matrix();
+    vine_struct_ = selector.get_rvine_structure();
     pair_copulas_ = selector.get_pair_copulas();
 }
 
@@ -337,6 +338,7 @@ inline void Vinecop::select_families(const Eigen::MatrixXd &data,
         tools_select::FamilySelector selector(newdata, vine_struct_, controls);
         if (controls.needs_sparse_select()) {
             selector.sparse_select_all_trees(newdata);
+            vine_struct_ = selector.get_rvine_structure(); // can be truncated
         } else {
             selector.select_all_trees(newdata);
         }
@@ -1104,5 +1106,14 @@ inline  void Vinecop::check_pair_copulas_rvine_structure(
         }
     }
 }
+
+// truncate the vine copula model.
+// @param truncation_level the truncation level.
+inline void Vinecop::truncate(size_t truncation_level)
+{
+    vine_struct_.truncate(truncation_level);
+    pair_copulas_.resize(truncation_level);
+}
+
 
 }

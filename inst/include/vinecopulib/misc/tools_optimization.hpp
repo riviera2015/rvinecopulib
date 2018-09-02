@@ -20,7 +20,7 @@ typedef struct
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &U; //!< the data.
     vinecopulib::ParBicop *bicop; //!< a pointer to the bivariate copula to optimize.
     double par0;  //!< main dependence parameter.
-    unsigned int objective_calls; //!< number of evaluations of the objective.
+    size_t objective_calls; //!< number of evaluations of the objective.
     Eigen::VectorXd weights; //!< weights for the observations.
     double objective_min;  //!< final value of the objective function 
 } ParBicopOptData;
