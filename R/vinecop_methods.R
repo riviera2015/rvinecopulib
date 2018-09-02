@@ -224,11 +224,15 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
 compute_mBICV_penalty <- function(object, psi0) {
     d <- dim(object)[1]
     smr <- summary(object)
-    q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
+    q_m <- sapply(object$pair_copulas, get_q_m)
     q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
     m_seq <- seq_len(d - 1)
     pen <- object$npars * log(object$nobs)
     pen - 2 * sum(q_m * log(psi0^m_seq) + (d - 1 - q_m) * log(1 - psi0^m_seq))
+}
+
+get_q_m <- function(tree_copulas) {
+    sum(sapply(tree_copulas, function(x) x$family != "indep"))
 }
 
 #' @export
