@@ -160,7 +160,11 @@ as.bicop <- function(object) {
 #' @rdname bicop
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
-    assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
+    assert_that(
+        is.string(family), 
+        in_set(rotation, 0:3 * 90), 
+        is.numeric(parameters)
+    )
     if (family %in% setdiff(family_set_nonparametric, "indep"))
         stop("bicop_dist should not be used directly with nonparametric families.")
     
