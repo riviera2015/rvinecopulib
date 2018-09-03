@@ -324,6 +324,35 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tvine_select_cpp
+Rcpp::List tvine_select_cpp(const Eigen::MatrixXd& data, size_t order, bool is_structure_provided, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool show_trace, size_t num_threads);
+RcppExport SEXP _rvinecopulib_tvine_select_cpp(SEXP dataSEXP, SEXP orderSEXP, SEXP is_structure_providedSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< size_t >::type order(orderSEXP);
+    Rcpp::traits::input_parameter< bool >::type is_structure_provided(is_structure_providedSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type structure(structureSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type family_set(family_setSEXP);
+    Rcpp::traits::input_parameter< std::string >::type par_method(par_methodSEXP);
+    Rcpp::traits::input_parameter< std::string >::type nonpar_method(nonpar_methodSEXP);
+    Rcpp::traits::input_parameter< double >::type mult(multSEXP);
+    Rcpp::traits::input_parameter< int >::type truncation_level(truncation_levelSEXP);
+    Rcpp::traits::input_parameter< std::string >::type tree_criterion(tree_criterionSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< std::string >::type selection_criterion(selection_criterionSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< double >::type psi0(psi0SEXP);
+    Rcpp::traits::input_parameter< bool >::type select_truncation_level(select_truncation_levelSEXP);
+    Rcpp::traits::input_parameter< bool >::type select_threshold(select_thresholdSEXP);
+    Rcpp::traits::input_parameter< bool >::type preselect_families(preselect_familiesSEXP);
+    Rcpp::traits::input_parameter< bool >::type show_trace(show_traceSEXP);
+    Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tvine_select_cpp(data, order, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
@@ -350,6 +379,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 3},
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 18},
+    {"_rvinecopulib_tvine_select_cpp", (DL_FUNC) &_rvinecopulib_tvine_select_cpp, 19},
     {NULL, NULL, 0}
 };
 

@@ -95,9 +95,12 @@ public:
     double get_loglik() const;
 
     double get_threshold() const;
+    
+    std::vector<VineTree> get_trees() const {return trees_;};
+    std::vector<VineTree> get_trees_opt() const {return trees_opt_;};
 
 protected:
-    void select_tree(size_t t);
+    virtual void select_tree(size_t t);
 
     virtual void finalize(size_t trunc_lvl) = 0;
     
@@ -116,7 +119,7 @@ protected:
     void initialize_new_fit(const Eigen::MatrixXd &data);
 
     void set_current_fit_as_opt(const double& loglik);
-
+    
     
     virtual void add_allowed_edges(VineTree &tree) = 0;
 
@@ -125,6 +128,7 @@ protected:
     ptrdiff_t find_common_neighbor(size_t v0, size_t v1,
                                    const VineTree &tree);
 
+    virtual double compute_fit_id(const EdgeProperties& e);
 
     size_t n_;
     size_t d_;
@@ -139,7 +143,6 @@ protected:
     double psi0_; // initial prior probability for mbicv
     std::unique_ptr<tools_thread::ThreadPool> pool_;
 
-private:
     double get_next_threshold(std::vector<double> &thresholded_crits);
 
     // functions for manipulation of trees ----------------
@@ -155,8 +158,9 @@ private:
 
     void remove_vertex_data(VineTree &tree);
 
-    void select_pair_copulas(VineTree &tree,
-                             const VineTree &tree_opt = VineTree());
+    void select_pair_copulas(VineTree &tree);
+
+    void select_pair_copulas(VineTree &tree, VineTree &tree_opt);
 
     FoundEdge find_old_fit(double fit_id, const VineTree &old_graph);
 
@@ -179,7 +183,7 @@ public:
     {
     }
 
-private:
+protected:
     void add_allowed_edges(VineTree &tree);
 
     void finalize(size_t trunc_lvl);
@@ -196,8 +200,7 @@ public:
     {
     }
 
-private:
-
+protected:
     void add_allowed_edges(VineTree &tree);
 
     void finalize(size_t trunc_lvl);

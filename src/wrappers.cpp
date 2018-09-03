@@ -344,9 +344,9 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
 {
     
     auto vine_structure = rvine_structure_wrap(vinecop_cpp.get_rvine_structure());
-    auto pair_copulas = pair_copulas_wrap(vinecop_cpp.get_all_pair_copulas(), 
+    auto pair_copulas = pair_copulas_wrap(vinecop_cpp.get_all_pair_copulas(),
                                           vinecop_cpp.get_dim(), is_fitted);
-    
+
     double npars = vinecop_cpp.calculate_npars();
     double threshold = vinecop_cpp.get_threshold();
     double loglik = NAN;
@@ -480,3 +480,61 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
     }
     return vinecop_wrap(vinecop_cpp, TRUE);
 }
+
+#include <vinecopulib/vinecop/tvine.hpp>
+
+// [[Rcpp::export()]]
+Rcpp::List tvine_select_cpp(const Eigen::MatrixXd& data,
+                            size_t order,
+                              bool is_structure_provided,
+                              Rcpp::List& structure,
+                              std::vector<std::string> family_set,
+                              std::string par_method,
+                              std::string nonpar_method,
+                              double mult,
+                              int truncation_level,
+                              std::string tree_criterion,
+                              double threshold,
+                              std::string selection_criterion,
+                              const Eigen::VectorXd& weights,
+                              double psi0,
+                              bool select_truncation_level,
+                              bool select_threshold,
+                              bool preselect_families,
+                              bool show_trace,
+                              size_t num_threads)
+{
+    std::vector<BicopFamily> fam_set(family_set.size());
+    for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
+        fam_set[fam] = to_cpp_family(family_set[fam]);
+    }
+
+    FitControlsVinecop fit_controls(
+            fam_set,
+            par_method,
+            nonpar_method,
+            mult,
+            truncation_level,
+            tree_criterion,
+            threshold,
+            selection_criterion,
+            weights,
+            psi0,
+            preselect_families,
+            select_truncation_level,
+            select_threshold,
+            show_trace,
+            num_threads
+    );
+    
+    TVine tvine(data.cols(), order);
+    if (is_structure_provided) {
+        tvine = TVine(rvine_structure_wrap(structure, false), order);
+        tvine.select_families(data, fit_controls);
+    } else {
+        tvine.select_all(data, fit_controls);
+    }
+
+    return vinecop_wrap(tvine, TRUE);
+}
+
