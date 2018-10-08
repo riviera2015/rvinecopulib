@@ -6,14 +6,17 @@
 \title{Vine copula models}
 \usage{
 tvinecop(data, p = 1, family_set = "all", structure = NA,
-  par_method = "mle", nonpar_method = "constant", mult = 1,
-  selcrit = "bic", weights = numeric(), psi0 = 0.9, presel = TRUE,
-  trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
-  keep_data = FALSE, show_trace = FALSE, cores = 1)
+  in_vertex = NA, out_vertex = NA, par_method = "mle",
+  nonpar_method = "constant", mult = 1, selcrit = "bic",
+  weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
+  tree_crit = "tau", threshold = 0, keep_data = FALSE,
+  show_trace = FALSE, cores = 1)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
 uniform margins).}
+
+\item{p}{the Markov order.}
 
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
@@ -23,6 +26,14 @@ representation of the vine structure, or an object that can be coerced
 into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
 The dimension must be \code{length(pair_copulas[[1]]) + 1}; for \code{\link[=vinecop]{vinecop()}},
 \code{structure = NA} performs automatic structure selection.}
+
+\item{in_vertex}{the in-vertex; if \code{NA}, the in-vertex is selected
+automatically if no structure is provided, and is equivalent to 1 if a
+structure is provided.}
+
+\item{out_vertex}{the out-vertex; if \code{NA}, the out-vertex is selected
+automatically if no structure is provided, and is equivalent to 1 if a
+structure is provided.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only

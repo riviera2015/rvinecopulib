@@ -96,6 +96,8 @@ public:
 
     double get_threshold() const;
     
+    size_t get_nobs() const;
+
     std::vector<VineTree> get_trees() const {return trees_;};
     std::vector<VineTree> get_trees_opt() const {return trees_opt_;};
 
@@ -158,9 +160,8 @@ protected:
 
     void remove_vertex_data(VineTree &tree);
 
-    void select_pair_copulas(VineTree &tree);
-
-    void select_pair_copulas(VineTree &tree, VineTree &tree_opt);
+    void select_pair_copulas(VineTree &tree, 
+                             const VineTree &tree_opt = VineTree());
 
     FoundEdge find_old_fit(double fit_id, const VineTree &old_graph);
 

@@ -4,6 +4,13 @@
 #' 
 #' @aliases vinecop_dist
 #' @inheritParams bicop
+#' @param p the Markov order.
+#' @param in_vertex the in-vertex; if `NA`, the in-vertex is selected 
+#'   automatically if no structure is provided, and is equivalent to 1 if a 
+#'    structure is provided.
+#' @param out_vertex the out-vertex; if `NA`, the out-vertex is selected 
+#'   automatically if no structure is provided, and is equivalent to 1 if a 
+#'    structure is provided.
 #' @param family_set a character vector of families; see [bicop()] for 
 #' additional options.
 #' @param structure an `rvine_structure` object, namely a compressed 
@@ -91,11 +98,12 @@
 #' 
 #' @export
 tvinecop <- function(data, p = 1, family_set = "all", structure = NA,
-                    par_method = "mle", nonpar_method = "constant", mult = 1, 
-                    selcrit = "bic", weights = numeric(), psi0 = 0.9, 
-                    presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", 
-                    threshold = 0, keep_data = FALSE, show_trace = FALSE, 
-                    cores = 1) {
+                     in_vertex = NA, out_vertex = NA, 
+                     par_method = "mle", nonpar_method = "constant", mult = 1, 
+                     selcrit = "bic", weights = numeric(), psi0 = 0.9, 
+                     presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", 
+                     threshold = 0, keep_data = FALSE, show_trace = FALSE, 
+                     cores = 1) {
     assert_that(
         is.character(family_set),
         inherits(structure, "matrix") || 
@@ -112,7 +120,8 @@ tvinecop <- function(data, p = 1, family_set = "all", structure = NA,
         is.string(tree_crit),
         is.scalar(threshold),
         is.flag(keep_data),
-        is.number(cores), cores > 0
+        is.number(cores), cores > 0,
+        is.scalar(in_vertex), is.scalar(out_vertex)
     )
     
     # check if families known (w/ partial matching) and expand convenience defs
@@ -121,13 +130,20 @@ tvinecop <- function(data, p = 1, family_set = "all", structure = NA,
     ## pre-process input
     data <- if_vec_to_matrix(data)
     is_structure_provided <- !(is.scalar(structure) && is.na(structure))
-    if (is_structure_provided)
+    if (is_structure_provided) {
         structure <- as_rvine_structure(structure)
+    }
+    if (is.na(in_vertex))
+        in_vertex <- 1 * is_structure_provided
+    if (is.na(out_vertex))
+        out_vertex <- 1 * is_structure_provided
     
     ## fit and select copula model
-    vinecop <- tvine_select_cpp(
+    vinecop <- tvinecop_select_cpp(
         data = data, 
-        p,
+        p = p,
+        in_vertex = in_vertex,
+        out_vertex = out_vertex,
         is_structure_provided = is_structure_provided,
         structure = structure,
         family_set = family_set,
@@ -150,8 +166,7 @@ tvinecop <- function(data, p = 1, family_set = "all", structure = NA,
         show_trace = show_trace,
         num_threads = cores
     )
-    vinecop$order <- p
-    
+
     ## make all pair-copulas bicop objects
     vinecop$pair_copulas <- lapply(
         vinecop$pair_copulas, 
@@ -160,6 +175,7 @@ tvinecop <- function(data, p = 1, family_set = "all", structure = NA,
     
     ## make the structure a rvine-structure object
     class(vinecop$structure) <- c("rvine_structure", class(vinecop$structure))
+    class(vinecop$cs_structure) <- c("rvine_structure", class(vinecop$cs_structure))
     
     ## add information about the fit
     vinecop$names <- colnames(data)
@@ -180,6 +196,74 @@ tvinecop <- function(data, p = 1, family_set = "all", structure = NA,
     )
     vinecop$nobs <- nrow(data)
     
-    structure(vinecop, class = c("vinecop", "vinecop_dist"))
+    structure(vinecop, class = c("tvinecop", "vinecop", "vinecop_dist"))
 }
 
+#' Simulate from a T-vine model
+#' 
+#' [tvinecop_sim()] simulates a time series of length `n`;
+#' [tvinecop_sim_conditional()] simulates `n` observations for the next time
+#' point conditional on past observations; 
+#' [tvinecop_sim_ahead()] 
+#' simulates the next `n` time points conditional on the past.
+#' 
+#' @aliases tvinecop_sim tvinecop_sim_conditional tvinecop_sim_ahead
+#' 
+#' @param n number of observations.
+#' @param tvinecop a T-vine model object.
+#' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
+#' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
+#' sequence in higher dimensions (default `qrng = FALSE`).
+#' @param cores number of cores to use; if larger than one, computations are
+#'   done in parallel on `cores` batches .
+#'
+#' @export
+#'
+#' @examples
+tvinecop_sim <- function(n, tvinecop, qrng = FALSE, cores = 1) {
+    assert_that(
+        is.number(n),
+        inherits(tvinecop, "tvinecop"),
+        is.flag(qrng),
+        is.number(cores)
+    )
+    
+    U <- tvinecop_sim_cpp(tvinecop, n, qrng, cores, get_seeds())
+    if (!is.null(tvinecop$names))
+        colnames(U) <- tvinecop$names
+    
+    U
+}
+
+#' @rdname tvinecop_sim
+#' @param data time series of past observations (more recent observations are
+#'    at the bottom of the matrix.)
+#' @export
+tvinecop_sim_conditional <- function(n, data, tvinecop, qrng = FALSE, cores = 1) {
+    assert_that(
+        is.number(n),
+        inherits(tvinecop, "tvinecop"),
+        is.flag(qrng),
+        is.number(cores)
+    )
+    data <- if_vec_to_matrix(data)
+    
+    U <- tvinecop_sim_conditional_cpp(tvinecop, n, data, qrng, cores, get_seeds())
+    if (!is.null(tvinecop$names))
+        colnames(U) <- tvinecop$names
+    
+    U
+}
+
+#' @rdname tvinecop_sim
+#' @export
+tvinecop_sim_ahead <- function(n, data, tvinecop, qrng = FALSE) {
+    assert_that(is.number(n), inherits(tvinecop, "tvinecop"), is.flag(qrng))
+    data <- if_vec_to_matrix(data)
+    
+    U <- tvinecop_sim_ahead_cpp(tvinecop, n, data, qrng, get_seeds())
+    if (!is.null(tvinecop$names))
+        colnames(U) <- tvinecop$names
+    
+    U
+}

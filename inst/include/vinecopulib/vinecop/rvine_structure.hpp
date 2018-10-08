@@ -81,6 +81,7 @@ public:
     size_t get_dim() const;
     size_t get_trunc_lvl() const;
     std::vector<size_t> get_order() const;
+    std::vector<size_t> get_rev_order() const;
     TriangularArray<size_t> get_struct_array() const;
     TriangularArray<size_t> get_max_array() const;
     TriangularArray<size_t> get_needed_hfunc1() const;
@@ -91,9 +92,9 @@ public:
     size_t max_array(size_t tree, size_t edge) const;
 
     void truncate(size_t trunc_lvl);
-
-private:
-
+    std::string str() const;
+    
+protected:
     size_t find_trunc_lvl(
         const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat) const;
     std::vector<size_t> get_order(
@@ -125,6 +126,10 @@ private:
     TriangularArray<size_t> needed_hfunc2_;
 };
 
+std::ostream& operator<<(std::ostream& os, const vinecopulib::RVineStructure& rvs);
+
 }
+
+
 
 #include <vinecopulib/vinecop/implementation/rvine_structure.ipp>

@@ -483,26 +483,74 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 
 #include <vinecopulib/vinecop/tvine.hpp>
 
+TVine tvinecop_wrap(const Rcpp::List& tvinecop_r)
+{
+    size_t p = tvinecop_r["p"];
+    size_t in_vertex = tvinecop_r["in_vertex"];
+    size_t out_vertex = tvinecop_r["out_vertex"];;
+    
+    // omit R-vine matrix check, already done in R
+    auto cs_structure = rvine_structure_wrap(tvinecop_r["cs_structure"], false);
+    
+    // extract pair-copulas
+    auto pair_copulas = pair_copulas_wrap(tvinecop_r["pair_copulas"],
+                                          cs_structure.get_dim() * (p + 1));
+    
+    return TVine(pair_copulas, cs_structure, p, in_vertex, out_vertex);
+}
+
+Rcpp::List tvinecop_wrap(const TVine& tvinecop_cpp, bool is_fitted) 
+{
+    auto vine_structure = rvine_structure_wrap(tvinecop_cpp.get_rvine_structure());
+    auto cs_structure = rvine_structure_wrap(tvinecop_cpp.get_cs_structure());
+    size_t in_vertex = tvinecop_cpp.get_in_vertex();
+    size_t out_vertex = tvinecop_cpp.get_out_vertex();
+    size_t p = tvinecop_cpp.get_p();
+    
+    auto pair_copulas = pair_copulas_wrap(tvinecop_cpp.get_all_pair_copulas(),
+                                          tvinecop_cpp.get_dim(), is_fitted);
+    
+    double npars = tvinecop_cpp.calculate_npars();
+    double threshold = tvinecop_cpp.get_threshold();
+    double loglik = NAN;
+    if (is_fitted)
+        loglik = tvinecop_cpp.get_loglik();
+    return Rcpp::List::create(
+        Rcpp::Named("pair_copulas")      = pair_copulas,
+        Rcpp::Named("structure")         = vine_structure,
+        Rcpp::Named("npars")             = npars,
+        Rcpp::Named("loglik")            = loglik,
+        Rcpp::Named("threshold")         = threshold,
+        Rcpp::Named("in_vertex")         = in_vertex,
+        Rcpp::Named("p")                 = p,
+        Rcpp::Named("out_vertex")        = out_vertex,
+        Rcpp::Named("cs_structure")      = cs_structure
+    );
+}
+
+
 // [[Rcpp::export()]]
-Rcpp::List tvine_select_cpp(const Eigen::MatrixXd& data,
-                            size_t order,
-                              bool is_structure_provided,
-                              Rcpp::List& structure,
-                              std::vector<std::string> family_set,
-                              std::string par_method,
-                              std::string nonpar_method,
-                              double mult,
-                              int truncation_level,
-                              std::string tree_criterion,
-                              double threshold,
-                              std::string selection_criterion,
-                              const Eigen::VectorXd& weights,
-                              double psi0,
-                              bool select_truncation_level,
-                              bool select_threshold,
-                              bool preselect_families,
-                              bool show_trace,
-                              size_t num_threads)
+Rcpp::List tvinecop_select_cpp(const Eigen::MatrixXd& data,
+                               size_t p,
+                               size_t in_vertex,
+                               size_t out_vertex,
+                               bool is_structure_provided,
+                               Rcpp::List& structure,
+                               std::vector<std::string> family_set,
+                               std::string par_method,
+                               std::string nonpar_method,
+                               double mult,
+                               int truncation_level,
+                               std::string tree_criterion,
+                               double threshold,
+                               std::string selection_criterion,
+                               const Eigen::VectorXd& weights,
+                               double psi0,
+                               bool select_truncation_level,
+                               bool select_threshold,
+                               bool preselect_families,
+                               bool show_trace,
+                               size_t num_threads)
 {
     std::vector<BicopFamily> fam_set(family_set.size());
     for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
@@ -527,14 +575,46 @@ Rcpp::List tvine_select_cpp(const Eigen::MatrixXd& data,
             num_threads
     );
     
-    TVine tvine(data.cols(), order);
+    TVine tvine(data.cols(), p);
     if (is_structure_provided) {
-        tvine = TVine(rvine_structure_wrap(structure, false), order);
+        tvine = TVine(rvine_structure_wrap(structure, false), p, in_vertex, out_vertex);
         tvine.select_families(data, fit_controls);
     } else {
-        tvine.select_all(data, fit_controls);
+        tvine.select_all(data, fit_controls, in_vertex, out_vertex);
     }
 
-    return vinecop_wrap(tvine, TRUE);
+    return tvinecop_wrap(tvine, TRUE);
+}
+
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd tvinecop_sim_cpp(const Rcpp::List& tvinecop_r, 
+                                 const size_t n, 
+                                 const bool qrng,
+                                 size_t cores,
+                                 std::vector<int> seeds)
+{
+    return tvinecop_wrap(tvinecop_r).simulate(n, qrng, cores, seeds);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd tvinecop_sim_conditional_cpp(const Rcpp::List& tvinecop_r, 
+                                             const size_t n, 
+                                             const Eigen::MatrixXd& data,
+                                             const bool qrng,
+                                             size_t cores,
+                                             const std::vector<int>& seeds)
+{
+    return tvinecop_wrap(tvinecop_r).simulate_conditional(n, data, qrng, cores, seeds);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd tvinecop_sim_ahead_cpp(const Rcpp::List& tvinecop_r, 
+                                       const size_t n_ahead, 
+                                       const Eigen::MatrixXd& data,
+                                       const bool qrng,
+                                       const std::vector<int>& seeds)
+{
+    return tvinecop_wrap(tvinecop_r).simulate_ahead(n_ahead, data, qrng, seeds);
 }
 

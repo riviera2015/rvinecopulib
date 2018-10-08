@@ -159,6 +159,15 @@ inline std::vector<size_t> RVineStructure::get_order() const
     return order_;
 }
 
+//! extract the reverse order
+inline std::vector<size_t> RVineStructure::get_rev_order() const
+{
+    auto rev_order = order_;
+    tools_stl::reverse(rev_order);
+    return rev_order;
+}
+
+
 //! extract structure array (all elements above the diagonal in the R-vine 
 //! array).
 inline TriangularArray<size_t> RVineStructure::get_struct_array() const 
@@ -214,6 +223,26 @@ inline void RVineStructure::truncate(size_t trunc_lvl)
     needed_hfunc2_.truncate(trunc_lvl);
     trunc_lvl_ = struct_array_.get_trunc_lvl();
 }
+
+//! converts the structure to a string representation (most useful for printing).
+inline std::string RVineStructure::str() const
+{
+    std::stringstream str;
+    for (size_t i = 0; i < d_ - 1; i++) {
+        for (size_t j = 0; j < d_ - i - 1; j++) {
+            if (i < trunc_lvl_) {
+                str << order_[struct_array_(i, j) - 1] << " ";
+            } else  {
+                str << "  ";
+            }
+        }
+        str << order_[i] << std::endl;
+    }
+    str << order_[d_ - 1] << std::endl;
+    
+    return str.str();
+}
+
 
 //! extract the R-vine matrix representation.
 inline Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> 
@@ -460,6 +489,16 @@ inline void RVineStructure::check_proximity_condition() const
             }
         }
     }
+}
+
+
+//! ostream method for RightTrapezoid, to be used with `std::cout`
+//! @param os an output stream.
+//! @param rvm n triangular array.
+std::ostream& operator<<(std::ostream& os, const vinecopulib::RVineStructure& rvs) 
+{  
+    os << rvs.str();
+    return os;  
 }
 
 }

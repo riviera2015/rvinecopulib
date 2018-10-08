@@ -292,6 +292,11 @@ inline double VinecopSelector::get_threshold() const
     return threshold_;
 }
 
+// extracts the number of observations 
+inline size_t VinecopSelector::get_nobs() const
+{
+    return n_;
+}
 
 //! chooses threshold for next iteration such that at a proportion of at
 //! least 2.5% of the previously thresholded pairs become non-thresholded.
@@ -333,6 +338,7 @@ inline StructureSelector::StructureSelector(const Eigen::MatrixXd &data,
 {
     n_ = data.rows();
     d_ = data.cols();
+    vine_struct_ = RVineStructure(tools_stl::seq_int(1, d_), 1, false);
     trees_.resize(1);
     controls_ = controls;
     threshold_ = controls.get_threshold();
@@ -382,18 +388,18 @@ inline void StructureSelector::add_allowed_edges(VineTree &vine_tree)
 inline void StructureSelector::finalize(size_t trunc_lvl)
 {
     using namespace tools_stl;
+    trees_opt_ = trees_;
     pair_copulas_ = make_pair_copula_store(d_, trunc_lvl);
     TriangularArray<size_t> mat(d_, trunc_lvl);
     std::vector<size_t> order(d_);
 
     if (trunc_lvl > 0) {
-
         std::vector <size_t> ning_set;
 
         // fill matrix column by column
         for (size_t col = 0; col < d_ - 1; ++col) {
             tools_interface::check_user_interrupt();
-            // matrix above trunc_lvl will be filled more efficiently later
+            // matrix above trunc_lvl is left empty
             size_t t =
                 std::max(std::min(trunc_lvl, d_ - 1 - col), static_cast<size_t>(1));
             // start with highest tree in this column
@@ -421,9 +427,7 @@ inline void StructureSelector::finalize(size_t trunc_lvl)
 
                 // assign fitted pair copula to appropriate entry, see
                 // `Vinecop::get_pair_copula()`.
-                if (trunc_lvl > 0) {
-                    pair_copulas_[t - 1][col] = trees_[t][e].pair_copula;
-                }
+                pair_copulas_[t - 1][col] = trees_[t][e].pair_copula;
 
                 // initialize running set with full conditioning set of this edge
                 ning_set = trees_[t][e].conditioning;
@@ -711,6 +715,7 @@ inline VineTree VinecopSelector::make_base_tree(const Eigen::MatrixXd &data)
 {
     size_t d = data.cols();
     VineTree base_tree(d);
+    auto rev_order = vine_struct_.get_rev_order();
     // a star connects the root node (d) with all other nodes
     for (size_t target = 0; target < d; ++target) {
         tools_interface::check_user_interrupt(target % 10000 == 0);
@@ -718,10 +723,12 @@ inline VineTree VinecopSelector::make_base_tree(const Eigen::MatrixXd &data)
         auto e = add_edge(d, target, base_tree).first;
 
         // inititialize hfunc1 with actual data for variable "target"
-        base_tree[e].hfunc1 = data.col(boost::target(e, base_tree));
+        // data need are reordered to correspond to natural order (neccessary
+        // when structure is fixed)
+        base_tree[e].hfunc1 = data.col(rev_order[target] - 1);
         // identify edge with variable "target" and initialize sets
         base_tree[e].conditioned.reserve(2);
-        base_tree[e].conditioned.push_back(boost::target(e, base_tree));
+        base_tree[e].conditioned.push_back(rev_order[target] - 1);
         base_tree[e].conditioning.reserve(d - 2);
         base_tree[e].all_indices = base_tree[e].conditioned;
     }
@@ -859,18 +866,10 @@ inline void VinecopSelector::remove_vertex_data(VineTree &tree)
 
 //! Fit and select a pair copula for each edges
 //! @param tree a vine tree preprocessed with add_edge_info().
-inline void VinecopSelector::select_pair_copulas(VineTree &tree)
-{
-    VineTree tree_opt;
-    select_pair_copulas(tree, tree_opt);
-}
-
-//! Fit and select a pair copula for each edges
-//! @param tree a vine tree preprocessed with add_edge_info().
 //! @param tree_opt the current optimal tree (used only for sparse
 //!     selection).
 inline void VinecopSelector::select_pair_copulas(VineTree &tree,
-                                                 VineTree &tree_opt)
+                                                 const VineTree &tree_opt)
 {
     auto select_pc = [&](EdgeIterator e) -> void {
         tools_interface::check_user_interrupt();
@@ -907,7 +906,7 @@ inline void VinecopSelector::select_pair_copulas(VineTree &tree,
     
     // make sure that Bicop.select() doesn't spawn new threads
     size_t num_threads = controls_.get_num_threads();
-    controls_.set_num_threads(1);
+    controls_.set_num_threads(0);
     pool_->map(select_pc, boost::edges(tree));
     pool_->wait();
     controls_.set_num_threads(num_threads);

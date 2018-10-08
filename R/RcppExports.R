@@ -97,7 +97,19 @@ vinecop_select_cpp <- function(data, is_structure_provided, structure, family_se
     .Call(`_rvinecopulib_vinecop_select_cpp`, data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
 }
 
-tvine_select_cpp <- function(data, order, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
-    .Call(`_rvinecopulib_tvine_select_cpp`, data, order, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
+tvinecop_select_cpp <- function(data, p, in_vertex, out_vertex, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
+    .Call(`_rvinecopulib_tvinecop_select_cpp`, data, p, in_vertex, out_vertex, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
+}
+
+tvinecop_sim_cpp <- function(tvinecop_r, n, qrng, cores, seeds) {
+    .Call(`_rvinecopulib_tvinecop_sim_cpp`, tvinecop_r, n, qrng, cores, seeds)
+}
+
+tvinecop_sim_conditional_cpp <- function(tvinecop_r, n, data, qrng, cores, seeds) {
+    .Call(`_rvinecopulib_tvinecop_sim_conditional_cpp`, tvinecop_r, n, data, qrng, cores, seeds)
+}
+
+tvinecop_sim_ahead_cpp <- function(tvinecop_r, n_ahead, data, qrng, seeds) {
+    .Call(`_rvinecopulib_tvinecop_sim_ahead_cpp`, tvinecop_r, n_ahead, data, qrng, seeds)
 }
 

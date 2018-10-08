@@ -324,14 +324,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tvine_select_cpp
-Rcpp::List tvine_select_cpp(const Eigen::MatrixXd& data, size_t order, bool is_structure_provided, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool show_trace, size_t num_threads);
-RcppExport SEXP _rvinecopulib_tvine_select_cpp(SEXP dataSEXP, SEXP orderSEXP, SEXP is_structure_providedSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP) {
+// tvinecop_select_cpp
+Rcpp::List tvinecop_select_cpp(const Eigen::MatrixXd& data, size_t p, size_t in_vertex, size_t out_vertex, bool is_structure_provided, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool show_trace, size_t num_threads);
+RcppExport SEXP _rvinecopulib_tvinecop_select_cpp(SEXP dataSEXP, SEXP pSEXP, SEXP in_vertexSEXP, SEXP out_vertexSEXP, SEXP is_structure_providedSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< size_t >::type order(orderSEXP);
+    Rcpp::traits::input_parameter< size_t >::type p(pSEXP);
+    Rcpp::traits::input_parameter< size_t >::type in_vertex(in_vertexSEXP);
+    Rcpp::traits::input_parameter< size_t >::type out_vertex(out_vertexSEXP);
     Rcpp::traits::input_parameter< bool >::type is_structure_provided(is_structure_providedSEXP);
     Rcpp::traits::input_parameter< Rcpp::List& >::type structure(structureSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type family_set(family_setSEXP);
@@ -349,7 +351,53 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type preselect_families(preselect_familiesSEXP);
     Rcpp::traits::input_parameter< bool >::type show_trace(show_traceSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(tvine_select_cpp(data, order, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads));
+    rcpp_result_gen = Rcpp::wrap(tvinecop_select_cpp(data, p, in_vertex, out_vertex, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tvinecop_sim_cpp
+Eigen::MatrixXd tvinecop_sim_cpp(const Rcpp::List& tvinecop_r, const size_t n, const bool qrng, size_t cores, std::vector<int> seeds);
+RcppExport SEXP _rvinecopulib_tvinecop_sim_cpp(SEXP tvinecop_rSEXP, SEXP nSEXP, SEXP qrngSEXP, SEXP coresSEXP, SEXP seedsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type tvinecop_r(tvinecop_rSEXP);
+    Rcpp::traits::input_parameter< const size_t >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const bool >::type qrng(qrngSEXP);
+    Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tvinecop_sim_cpp(tvinecop_r, n, qrng, cores, seeds));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tvinecop_sim_conditional_cpp
+Eigen::MatrixXd tvinecop_sim_conditional_cpp(const Rcpp::List& tvinecop_r, const size_t n, const Eigen::MatrixXd& data, const bool qrng, size_t cores, const std::vector<int>& seeds);
+RcppExport SEXP _rvinecopulib_tvinecop_sim_conditional_cpp(SEXP tvinecop_rSEXP, SEXP nSEXP, SEXP dataSEXP, SEXP qrngSEXP, SEXP coresSEXP, SEXP seedsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type tvinecop_r(tvinecop_rSEXP);
+    Rcpp::traits::input_parameter< const size_t >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< const bool >::type qrng(qrngSEXP);
+    Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tvinecop_sim_conditional_cpp(tvinecop_r, n, data, qrng, cores, seeds));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tvinecop_sim_ahead_cpp
+Eigen::MatrixXd tvinecop_sim_ahead_cpp(const Rcpp::List& tvinecop_r, const size_t n_ahead, const Eigen::MatrixXd& data, const bool qrng, const std::vector<int>& seeds);
+RcppExport SEXP _rvinecopulib_tvinecop_sim_ahead_cpp(SEXP tvinecop_rSEXP, SEXP n_aheadSEXP, SEXP dataSEXP, SEXP qrngSEXP, SEXP seedsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type tvinecop_r(tvinecop_rSEXP);
+    Rcpp::traits::input_parameter< const size_t >::type n_ahead(n_aheadSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< const bool >::type qrng(qrngSEXP);
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tvinecop_sim_ahead_cpp(tvinecop_r, n_ahead, data, qrng, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -379,7 +427,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 3},
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 18},
-    {"_rvinecopulib_tvine_select_cpp", (DL_FUNC) &_rvinecopulib_tvine_select_cpp, 19},
+    {"_rvinecopulib_tvinecop_select_cpp", (DL_FUNC) &_rvinecopulib_tvinecop_select_cpp, 21},
+    {"_rvinecopulib_tvinecop_sim_cpp", (DL_FUNC) &_rvinecopulib_tvinecop_sim_cpp, 5},
+    {"_rvinecopulib_tvinecop_sim_conditional_cpp", (DL_FUNC) &_rvinecopulib_tvinecop_sim_conditional_cpp, 6},
+    {"_rvinecopulib_tvinecop_sim_ahead_cpp", (DL_FUNC) &_rvinecopulib_tvinecop_sim_ahead_cpp, 5},
     {NULL, NULL, 0}
 };
 

@@ -8,7 +8,6 @@
 
 // interface specfifc #defines can be set here 
 // (R package does: #define INTERFACED_FROM_R)
-#define INTERFACED_FROM_R
 
 
 // interface specific headers
